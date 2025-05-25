@@ -11,6 +11,7 @@ import 'package:myedu/views/dashboard_view.dart';
 import 'package:myedu/views/sign_in_view.dart';
 import 'package:myedu/views/sign_up_view.dart';
 import 'package:myedu/views/splash_view.dart';
+import 'package:myedu/views/notice_screen.dart';
 
 void main() async {
   // Ensure that plugin services are initialized so that Firebase can be used.
@@ -61,6 +62,12 @@ class MyApp extends StatelessWidget {
               name: AppRoutes.dashboard,
               page: () => const DashboardView(),
               transition: Transition.fadeIn,
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+            GetPage(
+              name: '/notices',
+              page: () => NoticeScreen(),
+              transition: Transition.rightToLeft,
               transitionDuration: const Duration(milliseconds: 300),
             ),
           ],

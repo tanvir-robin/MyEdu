@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:myedu/constraints/app_constants.dart';
-import 'package:myedu/utils/user_model.dart';
+import 'package:myedu/models/user_model.dart';
 
 class AuthController extends GetxController {
   static AuthController get instance => Get.find<AuthController>();

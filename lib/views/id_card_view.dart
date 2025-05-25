@@ -48,7 +48,7 @@ class IDCardView extends StatelessWidget {
 
   Widget _buildFrontCard(BuildContext context, user) {
     return Container(
-      width: 270,
+      width: 300,
       height: 470,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),

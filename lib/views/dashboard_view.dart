@@ -6,6 +6,11 @@ import '../controllers/auth_controller.dart';
 import '../controllers/dashboard_controller.dart';
 import '../controllers/theme_controller.dart';
 import 'id_card_view.dart';
+import 'notice_screen.dart';
+import 'academic_details_screen.dart';
+import 'class_schedule_screen.dart';
+import 'assigned_courses_screen.dart';
+import 'academic_fees_screen.dart';
 
 class DashboardView extends StatelessWidget {
   const DashboardView({super.key});
@@ -173,9 +178,9 @@ class DashboardView extends StatelessWidget {
 
                 // Primary Actions Section
                 _buildSectionTitle('Academic Hub'),
-                const SizedBox(height: 15),
+                // const SizedBox(height: 15),
                 _buildPrimaryActionsGrid(context),
-                const SizedBox(height: 25),
+                // const SizedBox(height: 25),
 
                 // Secondary Actions Section
                 _buildSectionTitle('Services & Information'),
@@ -341,7 +346,18 @@ class DashboardView extends StatelessWidget {
                   subtitle: actions[index]['subtitle'] as String,
                   icon: actions[index]['icon'] as IconData,
                   gradient: actions[index]['gradient'] as List<Color>,
-                  onTap: () {},
+                  onTap: () {
+                    if (index == 2) {
+                      // Navigate to Class Schedule screen
+                      Get.to(() => const ClassScheduleScreen());
+                    } else if (index == 1) {
+                      // Navigate to Assigned Courses screen
+                      Get.to(() => const AssignedCoursesScreen());
+                    } else if (index == 3) {
+                      // Navigate to Academic Details screen
+                      Get.to(() => const AcademicDetailsScreen());
+                    }
+                  },
                 ),
               ),
             ),
@@ -421,7 +437,9 @@ class DashboardView extends StatelessWidget {
         'subtitle': 'View and pay fees',
         'icon': Icons.receipt_long,
         'color': Colors.red,
-        'onTap': () {},
+        'onTap': () {
+          Get.to(() => const AcademicFeesScreen());
+        },
       },
       {
         'title': 'Hall Attachment Bills',
@@ -444,7 +462,9 @@ class DashboardView extends StatelessWidget {
         'subtitle': 'University announcements',
         'icon': Icons.notifications_active,
         'color': Colors.amber,
-        'onTap': () {},
+        'onTap': () {
+          Get.to(() => NoticeScreen());
+        },
       },
       {
         'title': 'Library Services',
