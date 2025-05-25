@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "615444202770",
+    "project_id": "myedu-d90cd",
+    "storage_bucket": "myedu-d90cd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:615444202770:android:b4f13a1afdb54876285fcb",
+        "android_client_info": {
+          "package_name": "com.example.myedu"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXwbpmnG5pTpQrxKsM6EAe6YPPRooo9So"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
