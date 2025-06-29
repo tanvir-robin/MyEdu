@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 import '../controllers/academic_fees_controller.dart';
 import '../controllers/auth_controller.dart';
 import '../models/academic_fee_model.dart';
+import '../views/payment_page.dart';
+import '../services/pdf_receipt_service.dart';
 
 class AcademicFeesScreen extends StatefulWidget {
   const AcademicFeesScreen({Key? key}) : super(key: key);
@@ -733,26 +735,57 @@ class _AcademicFeesScreenState extends State<AcademicFeesScreen>
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => _handleReceiptGeneration(fee),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _handleReceiptGeneration(fee);
+                      },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(
-                          0xFF1E40AF,
-                        ), // Darker blue for receipt
+                        backgroundColor: const Color(0xFF1E40AF),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        elevation: 4,
-                        shadowColor: const Color(0xFF1E40AF).withOpacity(0.3),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.receipt_long, size: 22),
+                          const Icon(Icons.receipt_long, size: 20),
                           const SizedBox(width: 8),
                           const Text(
                             'Show Receipt',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _handleEmailReceipt(fee);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.email, size: 20),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Send Email Receipt',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -1130,7 +1163,7 @@ class _AcademicFeesScreenState extends State<AcademicFeesScreen>
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    _handlePayment(fee);
+                    Get.to(() => PaymentPage(fee: fee));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: feesController.getStatusColor(
@@ -1165,36 +1198,72 @@ class _AcademicFeesScreenState extends State<AcademicFeesScreen>
                   ),
                 ],
               ),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _handleReceiptGeneration(fee);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1E40AF),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.receipt_long, size: 20),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Show Receipt',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _handleReceiptGeneration(fee);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1E40AF),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                    ],
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.receipt_long, size: 20),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Show Receipt',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _handleEmailReceipt(fee);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.email, size: 20),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Send Email Receipt',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
         ],
@@ -1236,46 +1305,7 @@ class _AcademicFeesScreenState extends State<AcademicFeesScreen>
 
   void _handlePayment(AcademicFeeModel fee) {
     HapticFeedback.mediumImpact();
-
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Text('Confirm Payment'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Are you sure you want to pay for ${fee.purpose}?'),
-                const SizedBox(height: 8),
-                Text(
-                  'Amount: ${feesController.formatCurrency(fee.totalAmount)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  feesController.payFee(fee);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('Confirm'),
-              ),
-            ],
-          ),
-    );
+    Get.to(() => PaymentPage(fee: fee));
   }
 
   void _handleReceiptGeneration(AcademicFeeModel fee) async {
@@ -1293,5 +1323,43 @@ class _AcademicFeesScreenState extends State<AcademicFeesScreen>
 
     HapticFeedback.lightImpact();
     await feesController.generateReceipt(fee, authController.user!);
+  }
+
+  void _handleEmailReceipt(AcademicFeeModel fee) async {
+    final authController = Get.find<AuthController>();
+    if (authController.user == null) {
+      Get.snackbar(
+        'Error',
+        'User information not available',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    HapticFeedback.lightImpact();
+
+    try {
+      await PdfReceiptService.generateAndEmailReceipt(
+        fee: fee,
+        user: authController.user!,
+      );
+      Get.snackbar(
+        'Success',
+        'Payment confirmation email sent successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to send email: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
 }

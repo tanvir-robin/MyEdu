@@ -6,7 +6,7 @@ To add sample data to your Firestore 'academic_fees' collection, use the followi
 
 Collection: academic_fees
 
-Document 1:
+Document 1 (Shows for All):
 {
   "purpose": "Semester Tuition Fee",
   "amount": 25000,
@@ -21,6 +21,8 @@ Document 1:
   "applicableFaculties": ["Computer Science", "Engineering", "Business"],
   "lateFee": 500,
   "discount": null,
+  "targetType": "All",
+  "targetValue": "",
   "items": [
     {
       "name": "Course Registration",
@@ -45,7 +47,7 @@ Document 1:
   ]
 }
 
-Document 2:
+Document 2 (Shows for 6th):
 {
   "purpose": "Registration Fee",
   "amount": 2000,
@@ -60,6 +62,8 @@ Document 2:
   "applicableFaculties": [],
   "lateFee": 200,
   "discount": null,
+  "targetType": "Class",
+  "targetValue": "6th",
   "items": [
     {
       "name": "Student ID Card",
@@ -79,7 +83,7 @@ Document 2:
   ]
 }
 
-Document 3:
+Document 3 (Shows for 20-21):
 {
   "purpose": "Library Fee",
   "amount": 1500,
@@ -94,6 +98,8 @@ Document 3:
   "applicableFaculties": [],
   "lateFee": 150,
   "discount": null,
+  "targetType": "Year",
+  "targetValue": "20-21",
   "items": [
     {
       "name": "Digital Library Access",
@@ -113,7 +119,7 @@ Document 3:
   ]
 }
 
-Document 4:
+Document 4 (Shows for 6th):
 {
   "purpose": "Lab Fee - Chemistry",
   "amount": 3000,
@@ -130,6 +136,8 @@ Document 4:
   "applicableFaculties": ["Chemistry", "Biochemistry"],
   "lateFee": null,
   "discount": 300,
+  "targetType": "Class",
+  "targetValue": "6th",
   "items": [
     {
       "name": "Lab Equipment Usage",
@@ -149,7 +157,7 @@ Document 4:
   ]
 }
 
-Document 5:
+Document 5 (Shows for 20-21):
 {
   "purpose": "Sports Fee",
   "amount": 800,
@@ -164,6 +172,8 @@ Document 5:
   "applicableFaculties": [],
   "lateFee": 100,
   "discount": null,
+  "targetType": "Year",
+  "targetValue": "20-21",
   "items": [
     {
       "name": "Gym Membership",
@@ -183,7 +193,7 @@ Document 5:
   ]
 }
 
-Document 6:
+Document 6 (Will NOT show - targetValue doesn't match criteria):
 {
   "purpose": "Development Fee",
   "amount": 5000,
@@ -198,6 +208,8 @@ Document 6:
   "applicableFaculties": [],
   "lateFee": 1000,
   "discount": null,
+  "targetType": "Class",
+  "targetValue": "7th", // This will NOT show because it's not '6th' or '20-21'
   "items": [
     {
       "name": "Building Maintenance",
@@ -222,6 +234,74 @@ Document 6:
   ]
 }
 
+Document 7 (Shows for specific student with ID "2002010"):
+{
+  "purpose": "Late Fee - Special Assessment",
+  "amount": 2500,
+  "deadline": "2025-06-20T00:00:00Z",
+  "createdAt": "2025-05-15T00:00:00Z",
+  "status": "pending",
+  "type": "miscellaneous",
+  "description": "Special assessment fee for late submission of documents",
+  "semester": "Spring 2025",
+  "academicYear": "2024-25",
+  "isRecurring": false,
+  "applicableFaculties": [],
+  "lateFee": 500,
+  "discount": null,
+  "targetType": "Individual",
+  "targetValue": "2002010", // This will show ONLY for student with ID "2002010"
+  "items": [
+    {
+      "name": "Document Processing",
+      "amount": 1500,
+      "description": "Processing fee for late document submission"
+    },
+    {
+      "name": "Administrative Penalty",
+      "amount": 1000,
+      "description": "Penalty for late submission"
+    }
+  ]
+}
+
+Document 8 (Shows for specific student with ID "2002011"):
+{
+  "purpose": "Outstanding Library Fine",
+  "amount": 800,
+  "deadline": "2025-06-25T00:00:00Z",
+  "createdAt": "2025-05-20T00:00:00Z",
+  "status": "pending",
+  "type": "miscellaneous",
+  "description": "Outstanding fine for overdue library books",
+  "semester": "Spring 2025",
+  "academicYear": "2024-25",
+  "isRecurring": false,
+  "applicableFaculties": [],
+  "lateFee": 100,
+  "discount": null,
+  "targetType": "Individual",
+  "targetValue": "2002011", // This will show ONLY for student with ID "2002011"
+  "items": [
+    {
+      "name": "Overdue Book Fine",
+      "amount": 600,
+      "description": "Fine for overdue library books"
+    },
+    {
+      "name": "Processing Fee",
+      "amount": 200,
+      "description": "Administrative processing fee"
+    }
+  ]
+}
+
+FILTERING LOGIC:
+- If targetType == 'All': Show the bill to everyone
+- If targetType == 'Individual' AND targetValue == user's academic ID: Show only to that specific student
+- If targetType != 'All' AND targetType != 'Individual' AND targetValue == '6th' OR targetValue == '20-21': Show the bill  
+- Otherwise: Do NOT show the bill
+
 To add this data:
 1. Go to Firebase Console
 2. Navigate to your Firestore Database
@@ -229,4 +309,6 @@ To add this data:
 4. Add documents with the above data structure
 5. Make sure to convert date strings to Firestore Timestamps
 6. The 'items' field should be an array of objects with name, amount, and optional description
+7. Add the new 'targetType' and 'targetValue' fields for filtering
+8. For Individual fees, set targetValue to the specific student's academic ID
 */

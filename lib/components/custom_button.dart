@@ -22,7 +22,7 @@ class CustomButton extends StatefulWidget {
     this.backgroundColor,
     this.textColor,
     this.width,
-    this.height = AppConstants.buttonHeight,
+    this.height = 50,
     this.icon,
     this.borderRadius = AppConstants.mediumRadius,
   });

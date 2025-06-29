@@ -1,9 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_sslcommerz/model/SSLCSdkType.dart';
+import 'package:flutter_sslcommerz/model/SSLCommerzInitialization.dart';
+import 'package:flutter_sslcommerz/model/SSLCurrencyType.dart';
+import 'package:flutter_sslcommerz/sslcommerz.dart';
 import '../models/academic_fee_model.dart';
 import '../models/user_model.dart';
 import '../services/pdf_receipt_service.dart';
+import '../views/payment_success_screen.dart';
+import '../views/payment_failed_screen.dart';
+import '../controllers/auth_controller.dart';
 
 class AcademicFeesController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -101,6 +108,11 @@ class AcademicFeesController extends GetxController {
   List<AcademicFeeModel> get filteredFees {
     var fees =
         academicFees.where((fee) {
+          // First, apply target filtering based on targetType and targetValue
+          if (!_shouldShowFee(fee)) {
+            return false;
+          }
+
           // Search filter
           if (searchQuery.value.isNotEmpty) {
             final query = searchQuery.value.toLowerCase();
@@ -139,6 +151,31 @@ class AcademicFeesController extends GetxController {
     return fees;
   }
 
+  // Method to determine if a fee should be shown based on targetType and targetValue
+  bool _shouldShowFee(AcademicFeeModel fee) {
+    // Get current user from AuthController
+    final authController = Get.find<AuthController>();
+    final currentUser = authController.user;
+
+    // If targetType is 'All', show all bills
+    if (fee.targetType == 'All') {
+      return true;
+    }
+
+    // If targetType is 'Individual', check if targetValue matches user's academic ID
+    if (fee.targetType == 'Individual' && currentUser != null) {
+      return fee.targetValue == currentUser.id;
+    }
+
+    // If targetType is not 'All' or 'Individual', only show bills where targetValue matches '6th' or '20-21'
+    if (fee.targetType != 'All' && fee.targetType != 'Individual') {
+      return fee.targetValue == '6th' || fee.targetValue == '20-21';
+    }
+
+    // Otherwise, don't show the bill
+    return false;
+  }
+
   void setFilter(String filter) {
     selectedFilter.value = filter;
   }
@@ -147,40 +184,95 @@ class AcademicFeesController extends GetxController {
     searchQuery.value = query;
   }
 
-  Future<void> payFee(AcademicFeeModel fee) async {
-    try {
-      isLoading.value = true;
+  Future<void> processPayment(AcademicFeeModel fee) async {
+    final authController = Get.find<AuthController>();
+    final currentUser = authController.user;
 
-      // In a real app, you would integrate with a payment gateway here
-      // For now, we'll simulate payment processing
-      await Future.delayed(const Duration(seconds: 2));
-
-      final updatedFee = fee.copyWith(
-        status: FeeStatus.paid,
-        paidAt: DateTime.now(),
-        receiptNumber: 'RCP${DateTime.now().millisecondsSinceEpoch}',
-      );
-
-      await _firestore
-          .collection('academic_fees')
-          .doc(fee.id)
-          .update(updatedFee.toMap());
-
-      // Update local data
-      final index = academicFees.indexWhere((f) => f.id == fee.id);
-      if (index != -1) {
-        academicFees[index] = updatedFee;
-        _calculateStatistics();
-      }
-
+    if (currentUser == null) {
       Get.snackbar(
-        'Payment Successful',
-        'Payment for ${fee.purpose} has been processed',
+        'Error',
+        'User not authenticated',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.red,
         colorText: Colors.white,
-        duration: const Duration(seconds: 3),
       );
+      return;
+    }
+
+    isLoading.value = true;
+
+    try {
+      // Initialize SSL Commerz
+      Sslcommerz sslcommerz = Sslcommerz(
+        initializer: SSLCommerzInitialization(
+          multi_card_name: "visa,master,bkash,nagad",
+          currency: SSLCurrencyType.BDT,
+          product_category: "Education",
+          sdkType: SSLCSdkType.TESTBOX,
+          store_id: "algor670ab401dbbcc",
+          store_passwd: "algor670ab401dbbcc@ssl",
+          total_amount: fee.totalAmount,
+          tran_id: DateTime.now().millisecondsSinceEpoch.toString(),
+        ),
+      );
+
+      var result = await sslcommerz.payNow();
+
+      if (result.status == 'VALID') {
+        // Update the fee status to paid
+        final updatedFee = fee.copyWith(
+          status: FeeStatus.paid,
+          paidAt: DateTime.now(),
+          receiptNumber: result.tranId,
+        );
+
+        await _firestore
+            .collection('academic_fees')
+            .doc(fee.id)
+            .update(updatedFee.toMap());
+
+        // Update local data
+        final index = academicFees.indexWhere((f) => f.id == fee.id);
+        if (index != -1) {
+          academicFees[index] = updatedFee;
+          _calculateStatistics();
+        }
+
+        // Send payment confirmation email
+        try {
+          await PdfReceiptService.generateAndEmailReceipt(
+            fee: updatedFee,
+            user: currentUser,
+          );
+          print('Payment confirmation email sent successfully');
+        } catch (e) {
+          print('Failed to send payment confirmation email: $e');
+          // Don't block the payment success flow if email fails
+        }
+
+        // Navigate to Payment Success screen
+        Get.to(
+          () => PaymentSuccessScreen(
+            fee: updatedFee,
+            user: currentUser,
+            paymentData: {
+              'tran_id': result.tranId,
+              'amount': result.amount,
+              'card_type': result.cardType,
+              'bank_tran_id': result.bankTranId,
+              'status': result.status,
+            },
+          ),
+        );
+      } else {
+        // Navigate to Payment Failed screen
+        Get.to(
+          () => PaymentFailedScreen(
+            fee: fee,
+            errorMessage: result.status ?? 'Payment failed',
+          ),
+        );
+      }
     } catch (e) {
       Get.snackbar(
         'Payment Failed',
@@ -192,6 +284,11 @@ class AcademicFeesController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // Keep the old method name for backward compatibility
+  Future<void> payFee(AcademicFeeModel fee) async {
+    await processPayment(fee);
   }
 
   void refreshFees() {

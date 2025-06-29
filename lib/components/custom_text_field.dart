@@ -51,7 +51,7 @@ class _CustomTextFieldState extends State<CustomTextField>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: AppConstants.normalAnimation,
+      duration: Duration(microseconds: 200),
       vsync: this,
     );
     _animation = Tween<double>(begin: 0.0, end: 1.0).animate(

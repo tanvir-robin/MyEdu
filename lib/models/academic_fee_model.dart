@@ -60,6 +60,8 @@ class AcademicFeeModel {
   final double? lateFee;
   final double? discount;
   final List<FeeItem> items;
+  final String targetType;
+  final String targetValue;
 
   AcademicFeeModel({
     required this.id,
@@ -79,6 +81,8 @@ class AcademicFeeModel {
     this.lateFee,
     this.discount,
     this.items = const [],
+    this.targetType = 'All',
+    this.targetValue = '',
   });
 
   // Calculate total amount including late fee and discount
@@ -132,6 +136,8 @@ class AcademicFeeModel {
       'lateFee': lateFee,
       'discount': discount,
       'items': items.map((item) => item.toMap()).toList(),
+      'targetType': targetType,
+      'targetValue': targetValue,
     };
   }
 
@@ -155,6 +161,8 @@ class AcademicFeeModel {
       lateFee: _parseAmount(map['lateFee']),
       discount: _parseAmount(map['discount']),
       items: _parseItems(map['items'] ?? map['breakdown'] ?? map['details']),
+      targetType: map['targetType'] ?? 'All',
+      targetValue: map['targetValue'] ?? '',
     );
   }
 
@@ -312,6 +320,8 @@ class AcademicFeeModel {
     double? lateFee,
     double? discount,
     List<FeeItem>? items,
+    String? targetType,
+    String? targetValue,
   }) {
     return AcademicFeeModel(
       id: id ?? this.id,
@@ -331,6 +341,8 @@ class AcademicFeeModel {
       lateFee: lateFee ?? this.lateFee,
       discount: discount ?? this.discount,
       items: items ?? this.items,
+      targetType: targetType ?? this.targetType,
+      targetValue: targetValue ?? this.targetValue,
     );
   }
 }

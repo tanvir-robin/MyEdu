@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:myedu/constraints/app_constants.dart';
 import 'package:myedu/models/user_model.dart';
+import 'package:myedu/services/email_service.dart';
+import 'dart:math';
 
 class AuthController extends GetxController {
   static AuthController get instance => Get.find<AuthController>();
@@ -21,12 +23,18 @@ class AuthController extends GetxController {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final EmailService _emailService = EmailService();
 
   // Normal variables instead of Rx
   User? _firebaseUser;
   UserModel? _user;
   bool _isLoading = false;
   bool _isAuthenticating = false; // Add this flag
+
+  // OTP related variables
+  String? _currentOtp;
+  String? _pendingEmail;
+  DateTime? _otpExpiryTime;
 
   // Getters
   User? get firebaseUser => _firebaseUser;
@@ -297,23 +305,26 @@ class AuthController extends GetxController {
       }
 
       try {
-        bool success = await signUp(
-          name: nameController.text.trim(),
-          email: emailController.text.trim(),
-          password: passwordController.text.trim(),
-          faculty: selectedFaculty!,
-          id: idController.text.trim(),
-          regi: regiController.text.trim(),
-          phone: phoneController.text.trim(),
-        );
+        // Send OTP email first
+        await sendOtpEmail(emailController.text.trim());
 
-        if (success) {
-          Get.offAllNamed(AppRoutes.dashboard);
-        }
+        // Navigate to OTP verification screen
+        Get.toNamed(
+          AppRoutes.otpVerification,
+          arguments: {
+            'email': emailController.text.trim(),
+            'name': nameController.text.trim(),
+            'faculty': selectedFaculty!,
+            'id': idController.text.trim(),
+            'regi': regiController.text.trim(),
+            'phone': phoneController.text.trim(),
+            'password': passwordController.text.trim(),
+          },
+        );
       } catch (e) {
         Get.snackbar(
           'Error',
-          'AuthController not found. Please restart the app.',
+          'Failed to send OTP. Please try again.',
           backgroundColor: Colors.red,
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP,
@@ -322,6 +333,194 @@ class AuthController extends GetxController {
           borderRadius: 12,
         );
       }
+    }
+  }
+
+  // Generate a random 6-digit OTP
+  String _generateOtp() {
+    Random random = Random();
+    return (100000 + random.nextInt(900000)).toString();
+  }
+
+  // Send OTP email
+  Future<void> sendOtpEmail(String email) async {
+    try {
+      _isLoading = true;
+      update();
+
+      // Generate new OTP
+      _currentOtp = _generateOtp();
+      _pendingEmail = email;
+      _otpExpiryTime = DateTime.now().add(const Duration(minutes: 5));
+
+      // Send OTP email
+      await _emailService.sendOtpEmail(email, _currentOtp!);
+
+      Get.snackbar(
+        'Success',
+        'OTP sent to your email successfully!',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to send OTP. Please try again.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+      rethrow;
+    } finally {
+      _isLoading = false;
+      update();
+    }
+  }
+
+  // Verify OTP and complete sign-up
+  Future<bool> verifyOtpAndSignUp({
+    required String otp,
+    required String name,
+    required String email,
+    required String password,
+    required String faculty,
+    required String id,
+    required String regi,
+    required String phone,
+  }) async {
+    try {
+      _isLoading = true;
+      update();
+
+      // Check if OTP is valid
+      if (_currentOtp == null || _pendingEmail != email) {
+        Get.snackbar(
+          'Error',
+          'Invalid OTP session. Please request a new OTP.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 3),
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+        return false;
+      }
+
+      // Check if OTP has expired
+      if (_otpExpiryTime == null || DateTime.now().isAfter(_otpExpiryTime!)) {
+        Get.snackbar(
+          'Error',
+          'OTP has expired. Please request a new OTP.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 3),
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+        return false;
+      }
+
+      // Verify OTP
+      if (otp != _currentOtp) {
+        Get.snackbar(
+          'Error',
+          'Invalid OTP code. Please try again.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 3),
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+        return false;
+      }
+
+      // OTP is valid, proceed with sign-up
+      _isAuthenticating = true;
+      update();
+
+      // Create user with email and password
+      UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(email: email, password: password);
+
+      // Create user model
+      UserModel newUser = UserModel(
+        uid: userCredential.user!.uid,
+        name: name,
+        email: email,
+        faculty: faculty,
+        id: id,
+        regi: regi,
+        phone: phone,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      // Save user data to Firestore
+      await _firestore
+          .collection(AppConstants.usersCollection)
+          .doc(userCredential.user!.uid)
+          .set(newUser.toMap());
+
+      // Clear OTP data
+      _currentOtp = null;
+      _pendingEmail = null;
+      _otpExpiryTime = null;
+
+      _isAuthenticating = false;
+      _isLoading = false;
+      update();
+
+      Get.snackbar(
+        'Success',
+        'Account created successfully!',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+
+      return true;
+    } on FirebaseAuthException catch (e) {
+      String message = _getFirebaseErrorMessage(e.code);
+      Get.snackbar(
+        'Error',
+        message,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+      return false;
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to create account. Please try again.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+      return false;
+    } finally {
+      _isLoading = false;
+      _isAuthenticating = false;
+      update();
     }
   }
 }

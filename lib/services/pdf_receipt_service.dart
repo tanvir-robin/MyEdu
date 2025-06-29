@@ -7,8 +7,11 @@ import 'package:open_file/open_file.dart';
 import 'package:intl/intl.dart';
 import '../models/academic_fee_model.dart';
 import '../models/user_model.dart';
+import 'email_service.dart';
 
 class PdfReceiptService {
+  static final EmailService _emailService = EmailService();
+
   static Future<void> generateAndShowReceipt({
     required AcademicFeeModel fee,
     required UserModel user,
@@ -694,5 +697,92 @@ class PdfReceiptService {
     await file.writeAsBytes(await pdf.save());
 
     return file;
+  }
+
+  // New method to generate and email receipt
+  static Future<void> generateAndEmailReceipt({
+    required AcademicFeeModel fee,
+    required UserModel user,
+  }) async {
+    final pdf = pw.Document();
+
+    // Load custom font if available
+    final font = await PdfGoogleFonts.notoSansRegular();
+    final fontBold = await PdfGoogleFonts.notoSansBold();
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(40),
+        build: (pw.Context context) {
+          return pw.Stack(
+            children: [
+              // Main content
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  // Header with University Name
+                  _buildHeader(fontBold, font),
+                  pw.SizedBox(height: 30),
+
+                  // Receipt Title and Number
+                  _buildReceiptTitle(fee, fontBold, font),
+                  pw.SizedBox(height: 25),
+
+                  // Student Information
+                  _buildStudentInfo(user, fontBold, font),
+                  pw.SizedBox(height: 25),
+
+                  // Payment Details
+                  _buildPaymentDetails(fee, fontBold, font),
+                  pw.SizedBox(height: 25),
+
+                  // Fee Items Table
+                  _buildFeeItemsTable(fee, fontBold, font),
+                  pw.SizedBox(height: 25),
+
+                  // Total and Payment Info
+                  _buildTotalSection(fee, fontBold, font),
+                  pw.SizedBox(height: 30),
+
+                  // Footer
+                  _buildFooter(font),
+                ],
+              ),
+              // Watermark
+              _buildWatermark(),
+            ],
+          );
+        },
+      ),
+    );
+
+    // Save PDF to file
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/receipt_${fee.receiptNumber}.pdf');
+    await file.writeAsBytes(await pdf.save());
+
+    // Send email with receipt
+    try {
+      await _emailService.sendPaymentConfirmationEmail(
+        receiverEmail: user.email,
+        studentName: user.name,
+        receiptNumber: fee.receiptNumber ?? 'N/A',
+        amount: fee.totalAmount,
+        purpose: fee.purpose,
+        academicYear: fee.academicYear,
+        semester: fee.semester,
+        paymentDate: fee.paidAt ?? DateTime.now(),
+        receiptPdf: file,
+        paymentData: {
+          'receipt_number': fee.receiptNumber,
+          'amount': fee.totalAmount,
+          'purpose': fee.purpose,
+        },
+      );
+    } catch (e) {
+      print('Failed to send payment confirmation email: $e');
+      rethrow;
+    }
   }
 }
