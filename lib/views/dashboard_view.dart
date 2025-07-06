@@ -429,33 +429,33 @@ class DashboardView extends StatelessWidget {
                                     Row(
                                       children: [
                                         // Logout button
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(
-                                              0.15,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
-                                          ),
-                                          child: IconButton(
-                                            onPressed:
-                                                () => _showLogoutDialog(
-                                                  context,
-                                                  authController,
-                                                ),
-                                            icon: const Icon(
-                                              Icons.logout,
-                                              color: Colors.white,
-                                              size: 18,
-                                            ),
-                                            constraints: const BoxConstraints(
-                                              minWidth: 36,
-                                              minHeight: 36,
-                                            ),
-                                            tooltip: 'Logout',
-                                          ),
-                                        ),
+                                        // Container(
+                                        //   decoration: BoxDecoration(
+                                        //     color: Colors.white.withOpacity(
+                                        //       0.15,
+                                        //     ),
+                                        //     borderRadius: BorderRadius.circular(
+                                        //       10,
+                                        //     ),
+                                        //   ),
+                                        //   child: IconButton(
+                                        //     onPressed:
+                                        //         () => _showLogoutDialog(
+                                        //           context,
+                                        //           authController,
+                                        //         ),
+                                        //     icon: const Icon(
+                                        //       Icons.logout,
+                                        //       color: Colors.white,
+                                        //       size: 18,
+                                        //     ),
+                                        //     constraints: const BoxConstraints(
+                                        //       minWidth: 36,
+                                        //       minHeight: 36,
+                                        //     ),
+                                        //     tooltip: 'Logout',
+                                        //   ),
+                                        // ),
                                         const SizedBox(width: 8),
                                         // Notifications button
                                         Container(

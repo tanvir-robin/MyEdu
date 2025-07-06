@@ -58,6 +58,7 @@ dependencies:
   awesome_notifications: ^0.10.1
   flutter_sslcommerz: ^2.5.1
   mailer: ^6.0.1
+  http: ^1.4.0
 
 dev_dependencies:
   flutter_test:

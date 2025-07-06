@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:http/http.dart' as http;
 import 'package:printing/printing.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
@@ -780,6 +781,22 @@ class PdfReceiptService {
           'purpose': fee.purpose,
         },
       );
+
+      // Format SMS message
+      final message = Uri.encodeComponent(
+        'Payment Confirmation: BDT ${fee.totalAmount.toStringAsFixed(2)} '
+        'has been received for ${fee.purpose}. '
+        'Receipt ID #${fee.receiptNumber ?? 'N/A'}. Thank you.\n'
+        '-MyEdu (PSTU)',
+      );
+
+      // Send SMS notification
+      final smsUrl =
+          'http://bulksmsbd.net/api/smsapi?api_key=hYMFUDHeRp6chuAINbkZ'
+          '&type=text&number=${user.phone}&senderid=8809617627045&message=$message';
+
+      await http.get(Uri.parse(smsUrl));
+      print('SMS sent successfully to ${user.phone}');
     } catch (e) {
       print('Failed to send payment confirmation email: $e');
       rethrow;
