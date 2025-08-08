@@ -1,6 +1,9 @@
 # MyEdu - University Suite 🎓📱
 
-**MyEdu - University Suite** is a comprehensive university management app designed to streamline academic and administrative processes for students and institutions alike. Built with **Flutter**, this all-in-one solution brings everything a student needs — right at their fingertips.
+**MyEdu - University Suite** is a comprehensive university management app designed to streamline academic and administrative processes for students and institutions alike. Built with **Flutter**, this all-in-one solution brings everything a student needs, right at their fingertips.
+
+<img width="3294" height="1150" alt="CleanShot 2025-08-08 at 11 52 10@2x" src="https://github.com/user-attachments/assets/b5f26638-60b1-4f0e-a6ea-b021553b9004" />
+
 
 ---
 
