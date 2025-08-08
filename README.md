@@ -56,6 +56,14 @@ Get the dependencies:
 flutter pub get
 ```
 
+> **⚠️ Before Running:**  
+> This project requires Firebase configuration files to work properly.  
+> 
+> - **Add your Firebase files** (such as `firebase_options.dart` for Flutter and `firebase.json` for backend/functions) before running the app.
+> - You can generate `firebase_options.dart` using the [FlutterFire CLI](https://firebase.flutter.dev/docs/cli/).
+> - Without these files, authentication, notifications, and other cloud features will not work.
+
+
 Run the app:
 
 ```bash
