@@ -792,8 +792,8 @@ class PdfReceiptService {
 
       // Send SMS notification
       final smsUrl =
-          'http://bulksmsbd.net/api/smsapi?api_key=hYMFUDHeRp6chuAINbkZ'
-          '&type=text&number=${user.phone}&senderid=8809617627045&message=$message';
+          'http://bulksmsbd.net/api/smsapi?api_key=YOUR_API_KEY'
+          '&type=text&number=${user.phone}&senderid=SENDER_ID&message=$message';
 
       await http.get(Uri.parse(smsUrl));
       print('SMS sent successfully to ${user.phone}');

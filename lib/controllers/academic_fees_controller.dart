@@ -43,7 +43,10 @@ class AcademicFeesController extends GetxController {
 
       // Remove the orderBy to avoid errors if field doesn't exist
       QuerySnapshot snapshot =
-          await _firestore.collection('academic_fees').get();
+          await _firestore
+              .collection('academic_fees')
+              // .orderBy('createdAt', descending: true)
+              .get();
 
       print('Found ${snapshot.docs.length} documents');
 

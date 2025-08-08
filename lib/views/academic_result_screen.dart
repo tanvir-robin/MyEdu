@@ -366,6 +366,7 @@ class _AcademicResultScreenState extends State<AcademicResultScreen>
 
   Widget _buildAnimatedAppBar() {
     return SliverAppBar(
+      leading: SizedBox(),
       expandedHeight: 120,
       floating: false,
       pinned: true,
@@ -455,15 +456,15 @@ class _AcademicResultScreenState extends State<AcademicResultScreen>
           ),
         ),
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.refresh, color: Colors.white),
-          onPressed: () {
-            resultController.refreshResults();
-            HapticFeedback.lightImpact();
-          },
-        ),
-      ],
+      // actions: [
+      //   IconButton(
+      //     icon: const Icon(Icons.refresh, color: Colors.white),
+      //     onPressed: () {
+      //       resultController.refreshResults();
+      //       HapticFeedback.lightImpact();
+      //     },
+      //   ),
+      // ],
     );
   }
 
