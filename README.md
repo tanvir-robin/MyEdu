@@ -4,17 +4,7 @@
 
 <img width="3294" height="1150" alt="CleanShot 2025-08-08 at 11 52 10@2x" src="https://github.com/user-attachments/assets/b5f26638-60b1-4f0e-a6ea-b021553b9004" />
 
----
 
-## 🌐 Web Admin Panel
-
-Looking for the admin panel?  
-A dedicated web-based admin panel for MyEdu is available, built with **React** for university administrators and staff.
-
-- **Repository:** [MyEdu-Web-Admin](https://github.com/tanvir-robin/MyEdu-Web-Admin)
-- **Tech Stack:** React, Firebase
-
-The admin panel allows university staff to manage courses, students, results, notices, and more, all from a modern web interface.
 
 ---
 
