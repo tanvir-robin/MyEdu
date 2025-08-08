@@ -64,11 +64,18 @@ flutter run
 
 ---
 
-## 📷 Screenshots
 
-> *(Add screenshots or a short demo video here to showcase key features)*
 
----
+## 🙋‍♂️ About Me
+
+Hi, I'm **Tanvir Robin**, a passionate developer focused on building impactful digital solutions for education and beyond.
+
+- 🔗 **Portfolio:** [tanvirrobin.dev](https://tanvirrobin.dev)
+- 💼 **LinkedIn:** [linkedin.com/in/tanvir-robin](https://linkedin.com/in/tanvirrobin)
+
+To know more about my work, projects, and experience, please visit my portfolio or connect with me on LinkedIn!
+
+
 
 ## 📧 Contact
 
